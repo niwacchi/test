@@ -1,1 +1,111 @@
-/Users/niwacchi/Work/eclipse_workspace/AjaxInAction/callbacktest.html
+
+
+
+<html>
+<head>
+<script type='text/javascript'>
+var net=new Object();
+var READY_STATE_UNINITIALIZED=0;
+var READY_STATE_LOADING=1;
+var READY_STATE_LOADED=2;
+var READY_STATE_INTERACTIVE=3;
+var READY_STATE_COMPLETE=4;
+net.ContentLoader=function(url,onload,onerror){
+	this.url=url;
+	this.req=null;
+	this.onload=onload;
+	this.onerror=(onerror) ? onerror : this.defaultError;
+	this.loadXMLDoc(url);
+}
+
+
+
+
+sssss
+net.ContentLoader.prototype={
+	loadXMLDoc:function(url){
+	  if(window.XMLHttpRequest){
+		  this.req=new XMLHttpRequest();
+	  }else if(window.ActiveXObject){
+		  this.req=new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  if(this.req){
+		  tyr{
+			   var loader=this;
+			   this.req.onreadystatuschange=function(){
+				   loader.onReadyState.call(loader);
+			   }
+			   this.req.open('GET',url,true);
+			   this.req.send(null);
+		  }catch(err){
+			   this.onerror.call(this);
+		  }
+	  }
+	}
+  onReadyState:function(){
+		var req=this.req;
+		var ready=req.readyState;
+		if(ready==net.READY_STATE_COMPLETE){
+			var httpStatus=req.status;
+			if(httpStatus==200 || httpStatus==0){
+				this.onload.call(this);
+			}else{
+				this.onerror.call(this);
+			}
+		}
+	}
+	defaultError:function(){
+		alert("error fetching data!"
+			+"\n\nreadyState:"+this.req.readyState
+			+"\nstatus:"+this.req.status
+			+"\nheaders:"+this.req.getAllResponseHeaders());
+	}
+}
+function sendRequest(url,params,HttpMethod){
+	if(!HttpMethod){
+		HttpMethod = "GET";
+	}
+	req = initXMLHTTPRequest();
+	if(req){
+		req.onreadyStateChange=onReadyStateChange;
+		req.open(HttpMethod,url,true);
+		req.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+		req.send(params);
+	}
+}
+function initXMLHTTPRequest(){
+	var xRequest=null;
+	if(window.XMLHttpRequest){
+		xRequest=new XMLHttpRequest();
+	}else if(window.ActiveXObject){
+		xRequest=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+}
+function onReadyState(){
+	var ready=req.readyState;
+	var data=null;
+	if(ready==READY_STATE_COMPLETE){
+		data=req.responseText;
+	}else{
+		data="loading...["+ready+"]";
+	}
+	toConsole(data);
+}
+function toConsole(data){
+	if(console!=null){
+		var newline=document.createElement("div");
+		console.appendChild(newline);
+		var txt=document.createTextNode(data);
+		newline.appendChild(txt);
+	}
+}
+window.onload=function(){
+	console=document.getElementById('console');
+	sendRequest("data.txt");
+}
+</script>
+</head>
+<body>
+<div id='console'></div>
+</body>
+</html>
