@@ -712,6 +712,7 @@ our %actions = (
 	"tree" => \&git_tree,
 	"snapshot" => \&git_snapshot,
 	"object" => \&git_object,
+  "diffstat" => \&git_diffstat,
 	# those below don't need $project
 	"opml" => \&git_opml,
 	"project_list" => \&git_project_list,
@@ -3521,6 +3522,8 @@ EOF
 		if ($use_pathinfo) {
 			$action .= "/".esc_url($project);
 		}
+
+    print "<div class=\"search_diffstat\">";
 		print $cgi->startform(-method => "get", -action => $action) .
 		      "<div class=\"search\">\n" .
 		      (!$use_pathinfo &&
@@ -3538,6 +3541,21 @@ EOF
 		      "</span>" .
 		      "</div>" .
 		      $cgi->end_form() . "\n";
+    
+    print $cgi->startform(-method => "get", -action => $action) .
+          "<div class=\"diffstat\">\n" .
+          (!$use_pathinfo &&
+          $cgi->input({-name=>"p", -value=>$project, -type=>"hidden"}) . "\n") .
+          $cgi->input({-name=>"a", -value=>"diffstat", -type=>"hidden"}) . "\n" .
+          "diffstat:".
+          $cgi->textfield(-name => 'hp', -value=>""). "\n" .
+          " -> ".
+          $cgi->textfield(-name => 'h', -value=>""). "\n" .
+          "&nbsp;".
+          $cgi->button(-name => '', -value => 'Go'). "\n" .
+          "</div>" .
+          $cgi->end_form() . "\n";
+    print "</div>";
 	}
 }
 
@@ -6363,12 +6381,22 @@ sub git_commitdiff {
 
 		git_header_html(undef, $expires);
 		git_print_page_nav('commitdiff','', $hash,$co{'tree'},$hash, $formats_nav);
-		git_print_header_div('commit', esc_html($co{'title'}) . $ref, $hash);
-		print "<div class=\"title_text\">\n" .
-		      "<table class=\"object_header\">\n";
-		git_print_authorship_rows(\%co);
-		print "</table>".
-		      "</div>\n";
+
+    #git_print_header_div('commit', esc_html($co{'title'}) . $ref, $hash);
+
+    if ( $hash_parent ) {
+      my %cohp = parse_commit($hash_parent);
+      git_print_header_div('commit', "---".esc_html($cohp{'title'}) . $ref, $hash_parent);
+      git_print_header_div('commit', "+++".esc_html($co{'title'}) . $ref, $hash);
+    } else {
+      git_print_header_div('commit', esc_html($co{'title'}) . $ref, $hash);
+    }
+
+    #print "<div class=\"title_text\">\n" .
+		#      "<table class=\"object_header\">\n";
+    #git_print_authorship_rows(\%co);
+    #print "</table>".
+	  #      "</div>\n";
 		print "<div class=\"page_body\">\n";
 		if (@{$co{'comment'}} > 1) {
 			print "<div class=\"log\">\n";
