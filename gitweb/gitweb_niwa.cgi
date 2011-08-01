@@ -3995,7 +3995,7 @@ EOF
 ## functions printing or outputting HTML: navigation
 
 sub git_print_page_nav {
-	my ($current, $suppress, $head, $treehead, $treebase, $extra) = @_;
+	my ($current, $suppress, $head, $treehead, $treebase, $parent,  $extra) = @_;
 	$extra = '' if !defined $extra; # pager or formats
 
 	my @navs = qw(summary shortlog log commit commitdiff tree);
@@ -4011,6 +4011,7 @@ sub git_print_page_nav {
 		if ($current =~ m/^(tree | log | shortlog | commit | commitdiff | search)$/x) {
 			for (qw(shortlog log)) {
 				$arg{$_}{'hash'} = $head;
+        $arg{$_}{'hash_parent'} = $parent if defined $parent;
 			}
 		}
 	}
@@ -4031,7 +4032,7 @@ sub git_print_page_nav {
 		# insert
 		@navs = map { $_ eq $pos ? ($_, $label) : $_ } @navs;
 		# munch munch
-		$link =~ s/%([%nfhb])/$repl{$1}/g;
+		$link =~ s/%([%nfhbp])/$repl{$1}/g;
 		$arg{$label}{'_href'} = $link;
 	}
 
@@ -6983,7 +6984,7 @@ sub git_commitdiff {
 		my $ref = format_ref_marker($refs, $co{'id'});
 
 		git_header_html(undef, $expires);
-		git_print_page_nav('commitdiff','', $hash,$co{'tree'},$hash, $formats_nav);
+		git_print_page_nav('commitdiff','', $hash,$co{'tree'},$hash, $hash_parent, $formats_nav);
 		git_print_header_div('commit', esc_html($co{'title'}) . $ref, $hash);
 		print "<div class=\"title_text\">\n" .
 		      "<table class=\"object_header\">\n";
